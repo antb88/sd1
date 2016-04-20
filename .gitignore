@@ -1,0 +1,10 @@
+*/target/*
+**/idea
+**/*.iml
+.settings/
+.project
+.classpath
+target/
+.idea
+idea
+
