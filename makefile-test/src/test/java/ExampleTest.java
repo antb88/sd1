@@ -40,7 +40,7 @@ public class ExampleTest {
     InOrder inOrder = Mockito.inOrder(mock);
     inOrder.verify(mock).compile("f1");
     inOrder.verify(mock).compile("main");
-    Mockito.verifyNoMoreInteractions(mock);
+//    Mockito.verifyNoMoreInteractions(mock);
   }
 
   @Test
@@ -51,7 +51,7 @@ public class ExampleTest {
     inOrder.verify(mock).compile("f1");
     inOrder.verify(mock).compile("f2");
     inOrder.verify(mock).compile("main");
-    Mockito.verifyNoMoreInteractions(mock);
+//    Mockito.verifyNoMoreInteractions(mock);
   }
 
   @Test
@@ -59,6 +59,6 @@ public class ExampleTest {
     processFile("unmodified");
     when(mock.wasModified(anyString())).thenReturn(false);
     processFile("unmodified");
-    Mockito.verifyNoMoreInteractions(mock);
+//    Mockito.verifyNoMoreInteractions(mock);
   }
 }
