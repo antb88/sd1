@@ -8,12 +8,12 @@ import org.jgrapht.event.TraversalListener;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.BreadthFirstIterator;
-import org.jgrapht.traverse.DepthFirstIterator;
-import org.jgrapht.traverse.TopologicalOrderIterator;
+import org.jgrapht.traverse.*;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * GraphUtils library
@@ -44,31 +44,42 @@ public class GraphUtils {
         return new CycleDetector<>(graph).detectCycles();
     }
 
-    //TODO: add doc and clean up
     /**
-     * Simple BFS iterator
-     * @param graph
-     * @param source
-     * @param <V>
-     * @param <E>
-     * @return
+     * Get all sources of a {@link DirectedGraph} - all vertices with no incoming edges
+     * @param graph - graph to search
+     * @return - set of sources in the received graph
      */
-    public static <V, E> Iterator<V> BFSIterator(DirectedGraph<V, E> graph, V source) {
-        return new BreadthFirstIterator<>(graph, source);
+    public static <V,E> Set<V> getSourcesVertices(DirectedGraph<V,E> graph)
+    {
+        Set<V> vertexSet = graph.vertexSet();
+        Set<V> sources = new HashSet<V>(vertexSet.size()*2);
+        vertexSet.stream().forEach(v -> {
+            if(graph.incomingEdgesOf(v).isEmpty())
+            {
+                sources.add(v);
+            }
+        });
+        return sources;
     }
 
     /**
-     * Simple DFS iterator
-     * @param graph
-     * @param source
-     * @param <V>
-     * @param <E>
-     * @return
+     * Returns a Depth-first iterator on the specified graph.
+     * Iteration will start at the specified start vertex.
+     * If the specified start vertex is null, iteration will start at an arbitrary vertex.
+     *
+     * @param graph graph to search
+     * @param startVertex vertex to start DFS iteration
+     * @param listener {@link TraversalListener}, implements methods to be applied on visited vertices
      */
-    public static <V, E> Iterator<V> DFSIterator(DirectedGraph<V, E> graph, V source) {
-        return new DepthFirstIterator<>(graph, source);
-    }
+    private static <V,E> DepthFirstIterator<V, E> DFSTraverse(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener, boolean isCrossComponent)
+    {
+        DepthFirstIterator<V, E> iterator = new DepthFirstIterator<V, E>(graph, startVertex);
+        iterator.setCrossComponentTraversal(isCrossComponent);
+        iterator.addTraversalListener(listener);
+//        iterator.forEachRemaining(v -> {});
+        return iterator;
 
+    }
 
     /**
      * {@link #DFSTraverse(DirectedGraph , V, TraversalListener, boolean) DFSTraverse}.
@@ -91,6 +102,25 @@ public class GraphUtils {
     }
 
     /**
+     * Returns a Breadth-first iterator on the specified graph.
+     * Iteration will start at the specified start vertex.
+     * If the specified start vertex is null, iteration will start at an arbitrary vertex.
+     *
+     * @param graph graph to search
+     * @param startVertex vertex to start DFS iteration
+     * @param listener {@link TraversalListener}, implements methods to be applied on visited vertices
+     */
+    private static <V,E> BreadthFirstIterator<V, E> BFSTraverse(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener, boolean isCrossComponent)
+    {
+        BreadthFirstIterator<V, E> iterator = new BreadthFirstIterator<V, E>(graph, startVertex);
+        iterator.setCrossComponentTraversal(isCrossComponent);
+        iterator.addTraversalListener(listener);
+//        iterator.forEachRemaining(v -> {});
+        return iterator;
+
+    }
+
+    /**
      * {@link #BFSTraverse(DirectedGraph , V, TraversalListener, boolean) BFSTraverse}.
      * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
      *
@@ -110,46 +140,10 @@ public class GraphUtils {
         return BFSTraverse(graph, startVertex, listener, false);
     }
 
-    /**
-     * Returns a Depth-first iterator on the specified graph.
-     * Iteration will start at the specified start vertex.
-     * If the specified start vertex is null, iteration will start at an arbitrary vertex.
-     *
-     * @param graph       graph to search
-     * @param startVertex vertex to start DFS iteration
-     * @param listener    {@link TraversalListener}, implements methods to be applied on visited vertices
-     */
-    private static <V, E> DepthFirstIterator<V, E> DFSTraverse(DirectedGraph<V, E> graph, V startVertex, TraversalListener<V, E> listener, boolean isCrossComponent) {
-        DepthFirstIterator<V, E> iterator = new DepthFirstIterator<>(graph, startVertex);
-        iterator.setCrossComponentTraversal(isCrossComponent);
-        iterator.addTraversalListener(listener);
-//        iterator.forEachRemaining(v -> {});
-        return iterator;
-
-    }
-
-    /**
-     * Returns a Breadth-first iterator on the specified graph.
-     * Iteration will start at the specified start vertex.
-     * If the specified start vertex is null, iteration will start at an arbitrary vertex.
-     *
-     * @param graph       graph to search
-     * @param startVertex vertex to start DFS iteration
-     * @param listener    {@link TraversalListener}, implements methods to be applied on visited vertices
-     */
-    private static <V, E> BreadthFirstIterator<V, E> BFSTraverse(DirectedGraph<V, E> graph, V startVertex, TraversalListener<V, E> listener, boolean isCrossComponent) {
-        BreadthFirstIterator<V, E> iterator = new BreadthFirstIterator<>(graph, startVertex);
-        iterator.setCrossComponentTraversal(isCrossComponent);
-        iterator.addTraversalListener(listener);
-//        iterator.forEachRemaining(v -> {});
-        return iterator;
-
-    }
-
 
 
     public static void main(String[] args) {
-        DirectedGraph<Integer, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+        DirectedGraph<Integer, DefaultEdge> g = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
         g.addVertex(2);
         g.addVertex(1);
         g.addVertex(3);

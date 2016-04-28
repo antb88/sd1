@@ -153,4 +153,42 @@ public class GraphUtilsTest {
         Iterator<Integer> topoSort = toposort(complexGraph).get();
         Assert.assertTrue(toposortInvariant(complexGraph, topoSort));
     }
+    @Test
+    public void sourcesSmallGraphAreValid()
+    {
+        Set<Integer> expectedSources = new HashSet<>();
+        expectedSources.add(1);
+        Assert.assertEquals(GraphUtils.getSourcesVertices(smallGraph), expectedSources);
+    }
+
+    @Test
+    public void leavesSmallGraphAreValid()
+    {
+        Set<Integer> expectedLeaves = new HashSet<>();
+        expectedLeaves.addAll(Arrays.asList(2,4));
+        Assert.assertEquals(GraphUtils.getLeafVertices(smallGraph), expectedLeaves);
+    }
+
+    @Test
+    public void sourcesComplexGraphAreValid()
+    {
+        Set<Integer> expectedSources = new HashSet<>();
+        expectedSources.addAll(Arrays.asList(5,3,7));
+        Assert.assertEquals(GraphUtils.getSourcesVertices(complexGraph), expectedSources);
+    }
+
+    @Test
+    public void leavesComplexGraphAreValid()
+    {
+        Set<Integer> expectedLeaves = new HashSet<>();
+        expectedLeaves.addAll(Arrays.asList(2,9,10));
+        Assert.assertEquals(GraphUtils.getLeafVertices(complexGraph), expectedLeaves);
+    }
+
+    @Test
+    public void sourcesAndLeavesEmptyGraphAreEmpty()
+    {
+        Assert.assertEquals(GraphUtils.getSourcesVertices(emptyGraph), Collections.emptySet());
+        Assert.assertEquals(GraphUtils.getLeafVertices(emptyGraph), Collections.emptySet());
+    }
 }
