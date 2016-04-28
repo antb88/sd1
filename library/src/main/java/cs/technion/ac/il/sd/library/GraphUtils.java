@@ -8,12 +8,15 @@ import org.jgrapht.event.TraversalListener;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.*;
+import org.jgrapht.traverse.BreadthFirstIterator;
+import org.jgrapht.traverse.DepthFirstIterator;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * GraphUtils library
@@ -53,13 +56,7 @@ public class GraphUtils {
     {
         Set<V> vertexSet = graph.vertexSet();
         Set<V> sources = new HashSet<V>(vertexSet.size()*2);
-        vertexSet.stream().forEach(v -> {
-            if(graph.incomingEdgesOf(v).isEmpty())
-            {
-                sources.add(v);
-            }
-        });
-        return sources;
+        return vertexSet.stream().filter(v -> graph.inDegreeOf(v) == 0).collect(Collectors.toSet());
     }
 
     /**

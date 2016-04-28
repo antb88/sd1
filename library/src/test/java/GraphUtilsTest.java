@@ -3,9 +3,6 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.builder.DirectedGraphBuilder;
-import org.jgrapht.graph.builder.DirectedGraphBuilderBase;
-import org.jgrapht.graph.builder.DirectedWeightedGraphBuilderBase;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -13,12 +10,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Test file for {@link GraphUtils#toposort(DirectedGraph)}
@@ -161,13 +153,6 @@ public class GraphUtilsTest {
         Assert.assertEquals(GraphUtils.getSourcesVertices(smallGraph), expectedSources);
     }
 
-    @Test
-    public void leavesSmallGraphAreValid()
-    {
-        Set<Integer> expectedLeaves = new HashSet<>();
-        expectedLeaves.addAll(Arrays.asList(2,4));
-        Assert.assertEquals(GraphUtils.getLeafVertices(smallGraph), expectedLeaves);
-    }
 
     @Test
     public void sourcesComplexGraphAreValid()
@@ -177,18 +162,4 @@ public class GraphUtilsTest {
         Assert.assertEquals(GraphUtils.getSourcesVertices(complexGraph), expectedSources);
     }
 
-    @Test
-    public void leavesComplexGraphAreValid()
-    {
-        Set<Integer> expectedLeaves = new HashSet<>();
-        expectedLeaves.addAll(Arrays.asList(2,9,10));
-        Assert.assertEquals(GraphUtils.getLeafVertices(complexGraph), expectedLeaves);
-    }
-
-    @Test
-    public void sourcesAndLeavesEmptyGraphAreEmpty()
-    {
-        Assert.assertEquals(GraphUtils.getSourcesVertices(emptyGraph), Collections.emptySet());
-        Assert.assertEquals(GraphUtils.getLeafVertices(emptyGraph), Collections.emptySet());
-    }
 }
