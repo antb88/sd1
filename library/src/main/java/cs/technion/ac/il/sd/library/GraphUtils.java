@@ -63,28 +63,50 @@ public class GraphUtils {
     }
 
     /**
-     * Perform Depth-first iteration on the specified graph and apply visit method on each visited vertex.
-     * Iteration will start at the specified start vertex and will be limited to the connected component that includes that vertex.
-     * If the specified start vertex is null, iteration will start at an arbitrary vertex and will not be limited, that is,
-     * will be able to traverse all the graph.
+     * Returns a Depth-first iterator on the specified graph.
+     * Iteration will start at the specified start vertex.
+     * If the specified start vertex is null, iteration will start at an arbitrary vertex.
      *
-     * @param graph - graph to search
-     * @param startVertex - vertex to start DFS iteration
-     * @param visitor - {@link DFSVisitor}, implements visit method to be applied on visited vertices
+     * @param graph graph to search
+     * @param startVertex vertex to start DFS iteration
+     * @param listener {@link TraversalListener}, implements methods to be applied on visited vertices
      */
-    public static <V,E> void DFSTraverse(DirectedGraph<V,E> graph, V startVertex, DFSVisitor<V> visitor, TraversalListener<V,E> listener)
+    private static <V,E> DepthFirstIterator<V, E> DFSTraverse(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener, boolean isCrossComponent)
     {
-        GraphIterator<V, E> iterator = new DepthFirstIterator<V, E>(graph, startVertex);
-//        iterator.setCrossComponentTraversal(true); // enables to cross component with specifying start vertex
+        DepthFirstIterator<V, E> iterator = new DepthFirstIterator<V, E>(graph, startVertex);
+        iterator.setCrossComponentTraversal(isCrossComponent);
         iterator.addTraversalListener(listener);
-        iterator.forEachRemaining(v -> visitor.visit(v));
+//        iterator.forEachRemaining(v -> {});
+        return iterator;
 
     }
 
+    /**
+     * {@link #DFSTraverse(DirectedGraph , V, TraversalListener, boolean) DFSTraverse}.
+     * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
+     *
+     */
+    public static <V,E> DepthFirstIterator<V, E> DFSTraverseCrossComponent(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener)
+    {
+        return DFSTraverse(graph, startVertex, listener, true);
+    }
+
+    /**
+     * {@link #DFSTraverse(DirectedGraph , V, TraversalListener, boolean) DFSTraverse}.
+     * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
+     *
+     */
+    public static <V,E> DepthFirstIterator<V, E> DFSTraverseSingleComponent(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener)
+    {
+        return DFSTraverse(graph, startVertex, listener, false);
+    }
+
+
+
     public static void main(String[] args) {
         DirectedGraph<Integer, DefaultEdge> g = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
-        g.addVertex(1);
         g.addVertex(2);
+        g.addVertex(1);
         g.addVertex(3);
         g.addVertex(4);
         g.addVertex(5);
@@ -95,12 +117,7 @@ public class GraphUtils {
         g.addEdge(3,4);
         g.addEdge(4,5);
         System.out.println(g);
-        DFSTraverse(g, 1, new DFSVisitor<Integer>() {
-            @Override
-            public void visit(Integer vertex) {
-                System.out.println("visit" + vertex);
-            }
-        }, new TraversalListener<Integer, DefaultEdge>() {
+        DFSTraverseSingleComponent(g, 1, new TraversalListener<Integer, DefaultEdge>() {
             @Override
             public void connectedComponentFinished(ConnectedComponentTraversalEvent connectedComponentTraversalEvent) {
 
@@ -125,7 +142,7 @@ public class GraphUtils {
             public void vertexFinished(VertexTraversalEvent<Integer> vertexTraversalEvent) {
                 System.out.println("vertexFinished" + vertexTraversalEvent.getVertex());
             }
-        });
+        }).forEachRemaining(v->{});
     }
 
 }
