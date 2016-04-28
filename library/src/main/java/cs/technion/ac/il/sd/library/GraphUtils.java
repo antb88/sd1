@@ -59,7 +59,26 @@ public class GraphUtils {
                 sources.add(v);
             }
         });
+
         return sources;
+    }
+
+    /**
+     * Get all leaves of a {@link DirectedGraph} - all vertices with no outgoing edges
+     * @param graph - graph to search
+     * @return - set of leaves in the received graph
+     */
+    public static <V,E> Set<V> getLeafVertices(DirectedGraph<V,E> graph)
+    {
+        Set<V> vertexSet = graph.vertexSet();
+        Set<V> leaves = new HashSet<V>(vertexSet.size()*2);
+        vertexSet.stream().forEach(v -> {
+            if(graph.outgoingEdgesOf(v).isEmpty())
+            {
+                leaves.add(v);
+            }
+        });
+        return leaves;
     }
 
     /**
