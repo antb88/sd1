@@ -12,7 +12,6 @@ import org.jgrapht.traverse.BreadthFirstIterator;
 import org.jgrapht.traverse.DepthFirstIterator;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -54,9 +53,35 @@ public class GraphUtils {
      */
     public static <V,E> Set<V> getSourcesVertices(DirectedGraph<V,E> graph)
     {
-        Set<V> vertexSet = graph.vertexSet();
-        Set<V> sources = new HashSet<V>(vertexSet.size()*2);
-        return vertexSet.stream().filter(v -> graph.inDegreeOf(v) == 0).collect(Collectors.toSet());
+        return graph.vertexSet().stream()
+                .filter(v -> graph.inDegreeOf(v) == 0)
+                .collect(Collectors.toSet());
+    }
+
+    //TODO: clean up code
+
+    /**
+     * Simple dfs iterator
+     *
+     * @param graph
+     * @param <V>
+     * @param <E>
+     * @return
+     */
+    public static <V, E> Iterator<V> dfsIterator(DirectedGraph<V, E> graph) {
+        return new DepthFirstIterator<>(graph);
+    }
+
+    /**
+     * Simple bfs iterator
+     *
+     * @param graph
+     * @param <V>
+     * @param <E>
+     * @return
+     */
+    public static <V, E> Iterator<V> bfsIterator(DirectedGraph<V, E> graph) {
+        return new BreadthFirstIterator<>(graph);
     }
 
     /**
