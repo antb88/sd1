@@ -101,6 +101,45 @@ public class GraphUtils {
         return DFSTraverse(graph, startVertex, listener, false);
     }
 
+    /**
+     * Returns a Breadth-first iterator on the specified graph.
+     * Iteration will start at the specified start vertex.
+     * If the specified start vertex is null, iteration will start at an arbitrary vertex.
+     *
+     * @param graph graph to search
+     * @param startVertex vertex to start DFS iteration
+     * @param listener {@link TraversalListener}, implements methods to be applied on visited vertices
+     */
+    private static <V,E> BreadthFirstIterator<V, E> BFSTraverse(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener, boolean isCrossComponent)
+    {
+        BreadthFirstIterator<V, E> iterator = new BreadthFirstIterator<V, E>(graph, startVertex);
+        iterator.setCrossComponentTraversal(isCrossComponent);
+        iterator.addTraversalListener(listener);
+//        iterator.forEachRemaining(v -> {});
+        return iterator;
+
+    }
+
+    /**
+     * {@link #BFSTraverse(DirectedGraph , V, TraversalListener, boolean) BFSTraverse}.
+     * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
+     *
+     */
+    public static <V,E> BreadthFirstIterator<V, E> BFSTraverseCrossComponent(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener)
+    {
+        return BFSTraverse(graph, startVertex, listener, true);
+    }
+
+    /**
+     * {@link #BFSTraverse(DirectedGraph , V, TraversalListener, boolean) BFSTraverse}.
+     * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
+     *
+     */
+    public static <V,E> BreadthFirstIterator<V, E> BFSTraverseSingleComponent(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener)
+    {
+        return BFSTraverse(graph, startVertex, listener, false);
+    }
+
 
 
     public static void main(String[] args) {
@@ -117,7 +156,7 @@ public class GraphUtils {
         g.addEdge(3,4);
         g.addEdge(4,5);
         System.out.println(g);
-        DFSTraverseSingleComponent(g, 1, new TraversalListener<Integer, DefaultEdge>() {
+        DFSTraverseCrossComponent(g, 1, new TraversalListener<Integer, DefaultEdge>() {
             @Override
             public void connectedComponentFinished(ConnectedComponentTraversalEvent connectedComponentTraversalEvent) {
 
