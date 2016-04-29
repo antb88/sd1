@@ -4,10 +4,6 @@ import com.google.inject.Inject;
 import cs.technion.ac.il.sd.ExternalCompiler;
 import cs.technion.ac.il.sd.library.GraphUtils;
 import org.jgrapht.DirectedGraph;
-import org.jgrapht.event.ConnectedComponentTraversalEvent;
-import org.jgrapht.event.EdgeTraversalEvent;
-import org.jgrapht.event.TraversalListener;
-import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
@@ -26,6 +22,7 @@ public class MakefileImpl implements Makefile {
     private final ExternalCompiler external;
     private HashMap<String, Compilable> nameToComp;
     private HashMap<String, List<String>> nameToDepNames;
+    private DirectedGraph<Compilable, DefaultEdge> depGraph;
 
     @Inject
     public MakefileImpl(ExternalCompiler external) {
@@ -36,22 +33,21 @@ public class MakefileImpl implements Makefile {
 
     @Override
     public void processFile(File file) {
-        //TODO - remove compilable interface? add dfs & bfs without listener?
-
-        DirectedGraph<Compilable, DefaultEdge> depGraph = createDependenciesGraph(file);
+        //TODO - remove compilable interface?
+        depGraph = createDependenciesGraph(file);
         Optional<Iterator<Compilable>> toposort = GraphUtils.toposort(depGraph);
         if (!toposort.isPresent()) {
             external.fail();
             return;
         }
-        depGraph.vertexSet().forEach(this::initWasModified);
-        toposort.get().forEachRemaining(compilable -> {
-            if(compilable.wasModified())
-            {
-                external.compile(compilable.getName());
-                GraphUtils.DFSTraverseSingleComponent(depGraph, compilable, null).forEachRemaining(c -> c.wasModified(true));
-            }
-        });
+        toposort.get().forEachRemaining(this::compileAndUpdateDependants);
+    }
+
+    private void compileAndUpdateDependants(Compilable compilable) {
+        if (compilable.wasModified()) {
+            external.compile(compilable.getName());
+            GraphUtils.DFSTraverseSingleComponent(depGraph, compilable, null).forEachRemaining(c -> c.wasModified(true));
+        }
     }
 
     private DirectedGraph<Compilable, DefaultEdge> createDependenciesGraph(File file) {
@@ -105,8 +101,4 @@ public class MakefileImpl implements Makefile {
         nameToDepNames.put(taskOrFile, dependencies);
     }
 
-    private void initWasModified(Compilable c)
-    {
-        c.wasModified(c.getType() == Compilable.Type.FILE ? external.wasModified(c.getName()) : false);
-    }
 }
