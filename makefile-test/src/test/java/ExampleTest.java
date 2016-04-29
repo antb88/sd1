@@ -13,7 +13,7 @@ import org.mockito.Mockito;
 import java.io.File;
 
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ExampleTest {
   private final Injector injector = Guice.createInjector(new MakefileModule(), new AbstractModule() {
@@ -40,7 +40,7 @@ public class ExampleTest {
     InOrder inOrder = Mockito.inOrder(mock);
     inOrder.verify(mock).compile("f1");
     inOrder.verify(mock).compile("main");
-//    Mockito.verifyNoMoreInteractions(mock);
+    Mockito.verify(mock, times(2)).compile(anyString());
   }
 
   @Test
@@ -51,7 +51,7 @@ public class ExampleTest {
     inOrder.verify(mock).compile("f1");
     inOrder.verify(mock).compile("f2");
     inOrder.verify(mock).compile("main");
-//    Mockito.verifyNoMoreInteractions(mock);
+    Mockito.verify(mock, times(3)).compile(anyString());
   }
 
   @Test
@@ -59,6 +59,6 @@ public class ExampleTest {
     processFile("unmodified");
     when(mock.wasModified(anyString())).thenReturn(false);
     processFile("unmodified");
-//    Mockito.verifyNoMoreInteractions(mock);
+    Mockito.verify(mock, never()).compile(anyString());
   }
 }
