@@ -82,10 +82,10 @@ public class MakefileImpl implements Makefile {
     }
 
     private String[] splitInputLine(String line) {
-        return line.split("\\W+");
+        return line.split("[\\s+[=|:]*\\s*]+|[,\\s+]+ ");
     }
 
-    private void parseLine(String line) {
+    String[] parseLine(String line) {
 
         Compilable.Type type = line.contains(":") ? Compilable.Type.FILE : Compilable.Type.TASK;
         String[] tasksOrFiles = splitInputLine(line);
@@ -99,6 +99,13 @@ public class MakefileImpl implements Makefile {
             nameToComp.putIfAbsent(dependency, new CompilableImpl(dependency, Compilable.Type.FILE));
         }
         nameToDepNames.put(taskOrFile, dependencies);
+        return tasksOrFiles;
+
     }
 
+//    public static void main(String[] args) {
+//        MakefileImpl m = new MakefileImpl(null);
+//        for (String s : m.parseLine("file1.exe : dep1.c, dep2.cpp, dep3.java"))
+//            System.out.println(s);
+//    }
 }
