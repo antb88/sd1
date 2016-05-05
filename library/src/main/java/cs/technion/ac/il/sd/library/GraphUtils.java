@@ -10,9 +10,9 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.BreadthFirstIterator;
 import org.jgrapht.traverse.DepthFirstIterator;
-import org.jgrapht.traverse.GraphIterator;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -60,42 +60,53 @@ public class GraphUtils {
     }
 
     /**
+     * Get all leaves of a {@link DirectedGraph} - all vertices with no outgoing edges
+     * @param graph - graph to search
+     * @return - set of leaves in the received graph
+     */
+    public static <V,E> Set<V> getLeafVertices(DirectedGraph<V,E> graph)
+    {
+        return graph.vertexSet().stream()
+                .filter(v -> graph.outDegreeOf(v) == 0)
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * Returns a Depth-first iterator on the specified graph.
      * Iteration will start at the specified start vertex.
-     * If the specified start vertex is null, iteration will start at an arbitrary vertex.
-     *
-     * @param graph graph to search
+     * If the specified start vertex is empty, iteration will start at an arbitrary vertex.
+     *  @param graph graph to search
      * @param startVertex vertex to start DFS iteration
      * @param listener {@link TraversalListener}, implements methods to be applied on visited vertices
      */
-    private static <V,E> Iterator<V> DFSTraverse(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener, boolean isCrossComponent)
+    private static <V,E> Iterator<V> DFSTraverse(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener, boolean isCrossComponent)
     {
-        DepthFirstIterator<V, E> iterator = new DepthFirstIterator<V, E>(graph, startVertex);
+        DepthFirstIterator<V, E> iterator = new DepthFirstIterator<V, E>(graph, startVertex.isPresent() ? startVertex.get() : null);
         iterator.setCrossComponentTraversal(isCrossComponent);
-        if(listener != null)
+        if(listener.isPresent())
         {
-            iterator.addTraversalListener(listener);
+            iterator.addTraversalListener(listener.get());
         }
         return iterator;
 
     }
 
     /**
-     * {@link #DFSTraverse(DirectedGraph , V, TraversalListener, boolean) DFSTraverse}.
+     * {@link #DFSTraverse(DirectedGraph, Optional, Optional, boolean) DFSTraverse}.
      * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
      *
      */
-    public static <V,E> Iterator<V> DFSTraverseCrossComponent(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener)
+    public static <V,E> Iterator<V> DFSTraverseCrossComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener)
     {
         return DFSTraverse(graph, startVertex, listener, true);
     }
 
     /**
-     * {@link #DFSTraverse(DirectedGraph , V, TraversalListener, boolean) DFSTraverse}.
+     * {@link #DFSTraverse(DirectedGraph, Optional, Optional, boolean) DFSTraverse}.
      * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
      *
      */
-    public static <V,E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener)
+    public static <V,E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener)
     {
         return DFSTraverse(graph, startVertex, listener, false);
     }
@@ -103,88 +114,57 @@ public class GraphUtils {
     /**
      * Returns a Breadth-first iterator on the specified graph.
      * Iteration will start at the specified start vertex.
-     * If the specified start vertex is null, iteration will start at an arbitrary vertex.
-     *
-     * @param graph graph to search
+     * If the specified start vertex is empty, iteration will start at an arbitrary vertex.
+     *  @param graph graph to search
      * @param startVertex vertex to start DFS iteration
      * @param listener {@link TraversalListener}, implements methods to be applied on visited vertices
      */
-    private static <V,E> Iterator<V> BFSTraverse(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener, boolean isCrossComponent)
+    private static <V,E> Iterator<V> BFSTraverse(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener, boolean isCrossComponent)
     {
-        BreadthFirstIterator<V, E> iterator = new BreadthFirstIterator<>(graph, startVertex);
+        BreadthFirstIterator<V, E> iterator = new BreadthFirstIterator<>(graph, startVertex.isPresent() ? startVertex.get() : null);
         iterator.setCrossComponentTraversal(isCrossComponent);
-        if(listener != null)
+        if(listener.isPresent())
         {
-            iterator.addTraversalListener(listener);
+            iterator.addTraversalListener(listener.get());
         }
         return iterator;
 
     }
 
     /**
-     * {@link #BFSTraverse(DirectedGraph , V, TraversalListener, boolean) BFSTraverse}.
+     * {@link #BFSTraverse(DirectedGraph, Optional, Optional, boolean) BFSTraverse}.
      * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
      *
      */
-    public static <V,E> Iterator<V> BFSTraverseCrossComponent(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener)
+    public static <V,E> Iterator<V> BFSTraverseCrossComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener)
     {
         return BFSTraverse(graph, startVertex, listener, true);
     }
 
     /**
-     * {@link #BFSTraverse(DirectedGraph , V, TraversalListener, boolean) BFSTraverse}.
+     * {@link #BFSTraverse(DirectedGraph, Optional, Optional, boolean) BFSTraverse}.
      * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
      *
      */
-    public static <V,E> Iterator<V> BFSTraverseSingleComponent(DirectedGraph<V,E> graph, V startVertex, TraversalListener<V,E> listener)
+    public static <V,E> Iterator<V> BFSTraverseSingleComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener)
     {
         return BFSTraverse(graph, startVertex, listener, false);
     }
 
-
-
-    public static void main(String[] args) {
-        DirectedGraph<Integer, DefaultEdge> g = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
-        g.addVertex(2);
-        g.addVertex(1);
-        g.addVertex(3);
-        g.addVertex(4);
-        g.addVertex(5);
-        g.addVertex(6);
-        g.addEdge(1,2);
-        g.addEdge(1,3);
-        g.addEdge(2,5);
-        g.addEdge(3,4);
-        g.addEdge(4,5);
-        System.out.println(g);
-        DFSTraverseCrossComponent(g, 1, new TraversalListener<Integer, DefaultEdge>() {
-            @Override
-            public void connectedComponentFinished(ConnectedComponentTraversalEvent connectedComponentTraversalEvent) {
-
-            }
-
-            @Override
-            public void connectedComponentStarted(ConnectedComponentTraversalEvent connectedComponentTraversalEvent) {
-
-            }
-
-            @Override
-            public void edgeTraversed(EdgeTraversalEvent<Integer, DefaultEdge> edgeTraversalEvent) {
-
-            }
-
-            @Override
-            public void vertexTraversed(VertexTraversalEvent<Integer> vertexTraversalEvent) {
-                System.out.println("vertexTraversed" + vertexTraversalEvent.getVertex());
-            }
-
-            @Override
-            public void vertexFinished(VertexTraversalEvent<Integer> vertexTraversalEvent) {
-                System.out.println("vertexFinished" + vertexTraversalEvent.getVertex());
-            }
-        }).forEachRemaining(v->{});
-
-
+    /**
+     * Get all reachable vertices from a specified source vertex in a {@link DirectedGraph}.
+     * @param graph the graph to search
+     * @param source source
+     * @param <V>
+     * @param <E>
+     * @return
+     */
+    public static <V,E> Set<V> getAllReachableVerticesFromSource(DirectedGraph<V,E> graph, V source)
+    {
+        Set<V> reachable = new HashSet<>();
+        DFSTraverseSingleComponent(graph, Optional.of(source), Optional.empty()).forEachRemaining(v -> reachable.add(v));
+        reachable.remove(source);
+        return reachable;
     }
 
 }
