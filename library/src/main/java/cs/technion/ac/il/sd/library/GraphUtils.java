@@ -5,6 +5,7 @@ import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.event.TraversalListener;
 import org.jgrapht.traverse.BreadthFirstIterator;
 import org.jgrapht.traverse.DepthFirstIterator;
+import org.jgrapht.traverse.GraphIterator;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import java.util.HashSet;
@@ -73,6 +74,7 @@ public class GraphUtils {
      *  @param graph graph to search
      * @param startVertex vertex to start DFS iteration
      * @param listener {@link TraversalListener}, implements methods to be applied on visited vertices
+     * @throws IllegalArgumentException if the graph does not contain the specified start vertex
      */
     private static <V,E> Iterator<V> DFSTraverse(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener, boolean isCrossComponent)
     {
@@ -87,22 +89,26 @@ public class GraphUtils {
     }
 
     /**
+     * {@link #DFSTraverseCrossComponent(DirectedGraph, Optional, TraversalListener) DFSTraverseCrossComponent}.
+     */
+    public static <V,E> Iterator<V> DFSTraverseCrossComponent(DirectedGraph<V,E> graph, Optional<V> startVertex)
+    {
+        return DFSTraverse(graph, startVertex, Optional.empty(), true);
+    }
+
+    /**
      * {@link #DFSTraverse(DirectedGraph, Optional, Optional, boolean) DFSTraverse}.
-     * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
+     * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
      *
      */
-    public static <V,E> Iterator<V> DFSTraverseCrossComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener)
+    public static <V,E> Iterator<V> DFSTraverseCrossComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, TraversalListener<V, E> listener)
     {
-        return DFSTraverse(graph, startVertex, listener, true);
+        return DFSTraverse(graph, startVertex, Optional.of(listener), true);
     }
 
 
     /**
-     * @param graph
-     * @param startVertex
-     * @param <V>
-     * @param <E>
-     * @return
+     * {@link #DFSTraverseSingleComponent(DirectedGraph, Optional, TraversalListener) DFSTraverseSingleComponent}.
      */
     public static <V, E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V, E> graph, Optional<V> startVertex) {
         return DFSTraverse(graph, startVertex, Optional.empty(), false);
@@ -111,11 +117,10 @@ public class GraphUtils {
 
     /**
      * {@link #DFSTraverse(DirectedGraph, Optional, Optional, boolean) DFSTraverse}.
-     * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
-     *
+     * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
      */
-    private static <V, E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V, E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener) {
-        return DFSTraverse(graph, startVertex, listener, false);
+    public static <V, E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V, E> graph, Optional<V> startVertex, TraversalListener<V, E> listener) {
+        return DFSTraverse(graph, startVertex, Optional.of(listener), false);
     }
 
     /**
@@ -125,6 +130,7 @@ public class GraphUtils {
      *  @param graph graph to search
      * @param startVertex vertex to start DFS iteration
      * @param listener {@link TraversalListener}, implements methods to be applied on visited vertices
+     * @throws IllegalArgumentException if the graph does not contain the specified start vertex
      */
     private static <V,E> Iterator<V> BFSTraverse(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener, boolean isCrossComponent)
     {
@@ -139,13 +145,11 @@ public class GraphUtils {
     }
 
     /**
-     * {@link #BFSTraverse(DirectedGraph, Optional, Optional, boolean) BFSTraverse}.
-     * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
-     *
+     * {@link #BFSTraverseCrossComponent(DirectedGraph, Optional, TraversalListener) BFSTraverseCrossComponent}.
      */
-    public static <V,E> Iterator<V> BFSTraverseCrossComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener)
+    public static <V,E> Iterator<V> BFSTraverseCrossComponent(DirectedGraph<V,E> graph, Optional<V> startVertex)
     {
-        return BFSTraverse(graph, startVertex, listener, true);
+        return BFSTraverse(graph, startVertex, Optional.empty(), true);
     }
 
     /**
@@ -153,24 +157,38 @@ public class GraphUtils {
      * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
      *
      */
-    public static <V,E> Iterator<V> BFSTraverseSingleComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener)
+    public static <V,E> Iterator<V> BFSTraverseCrossComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, TraversalListener<V, E> listener)
     {
-        return BFSTraverse(graph, startVertex, listener, false);
+        return BFSTraverse(graph, startVertex, Optional.of(listener), true);
+    }
+
+    /**
+     * {@link #BFSTraverseSingleComponent(DirectedGraph, Optional, TraversalListener) BFSTraverseSingleComponent}.
+     */
+    public static <V,E> Iterator<V> BFSTraverseSingleComponent(DirectedGraph<V,E> graph, Optional<V> startVertex)
+    {
+        return BFSTraverse(graph, startVertex, Optional.empty(), false);
+    }
+
+    /**
+     * {@link #BFSTraverse(DirectedGraph, Optional, Optional, boolean) BFSTraverse}.
+     * The search will be limited to the connected component that includes the specified start vertex (or an arbitrary vertex if not specified).
+     */
+    public static <V,E> Iterator<V> BFSTraverseSingleComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, TraversalListener<V, E> listener)
+    {
+        return BFSTraverse(graph, startVertex, Optional.of(listener), false);
     }
 
     /**
      * Get all reachable vertices from a specified source vertex in a {@link DirectedGraph}.
      * @param graph the graph to search
-     * @param source source
-     * @param <V>
-     * @param <E>
-     * @return
+     * @param source source vertex
+     * @throws IllegalArgumentException if the graph does not contain the specified start vertex
      */
     public static <V,E> Set<V> getAllReachableVerticesFromSource(DirectedGraph<V,E> graph, V source)
     {
         Set<V> reachable = new HashSet<>();
-        DFSTraverseSingleComponent(graph, Optional.of(source), Optional.empty()).forEachRemaining(reachable::add);
-        reachable.remove(source);
+        DFSTraverseSingleComponent(graph, Optional.of(source)).forEachRemaining(reachable::add);
         return reachable;
     }
 

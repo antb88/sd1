@@ -42,7 +42,7 @@ public class MakefileImpl implements Makefile {
     private void compileAndUpdateDependants(Compilable compilable, DirectedGraph<Compilable, DefaultEdge> depGraph) {
         if (compilable.wasModified()) {
             external.compile(compilable.getName());
-            GraphUtils.DFSTraverseSingleComponent(depGraph, Optional.of(compilable)).forEachRemaining(c -> c.wasModified(true));
+            GraphUtils.getAllReachableVerticesFromSource(depGraph, compilable).forEach(c -> c.wasModified(true));
         }
     }
 
