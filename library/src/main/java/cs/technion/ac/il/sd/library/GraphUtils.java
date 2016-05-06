@@ -114,7 +114,7 @@ public class GraphUtils {
      * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
      *
      */
-    private static <V, E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V, E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener) {
+    public static <V, E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V, E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener) {
         return DFSTraverse(graph, startVertex, listener, false);
     }
 
