@@ -5,17 +5,13 @@ package cs.technion.ac.il.sd.app;
  */
 public interface Compilable {
 
-    String getName();
-
     enum Type {
         FILE,
         TASK;
     }
-
+    String getName();
     Type getType();
-
     boolean wasModified();
-
     boolean wasModified(boolean wasModified);
 
 }

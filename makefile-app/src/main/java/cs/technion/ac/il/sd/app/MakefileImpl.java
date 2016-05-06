@@ -7,11 +7,10 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Assigment 1 (Makefile) Implementation
@@ -20,92 +19,39 @@ public class MakefileImpl implements Makefile {
 
 
     private final ExternalCompiler external;
-    private HashMap<String, Compilable> nameToComp;
-    private HashMap<String, List<String>> nameToDepNames;
-    private DirectedGraph<Compilable, DefaultEdge> depGraph;
 
     @Inject
     public MakefileImpl(ExternalCompiler external) {
         this.external = external;
-        this.nameToComp = new HashMap<>();
-        this.nameToDepNames = new HashMap<>();
     }
 
     @Override
     public void processFile(File file) {
-        //TODO - remove compilable interface?
-        depGraph = createDependenciesGraph(file);
+
+        MakefileParser p = MakefileParser.parse(file).updateModified(external);
+        DirectedGraph<Compilable, DefaultEdge> depGraph = createDependenciesGraph(p);
         Optional<Iterator<Compilable>> toposort = GraphUtils.toposort(depGraph);
         if (!toposort.isPresent()) {
             external.fail();
             return;
         }
-        toposort.get().forEachRemaining(this::compileAndUpdateDependants);
+        toposort.get().forEachRemaining(c -> compileAndUpdateDependants(c, depGraph));
     }
 
-    private void compileAndUpdateDependants(Compilable compilable) {
+
+    private void compileAndUpdateDependants(Compilable compilable, DirectedGraph<Compilable, DefaultEdge> depGraph) {
         if (compilable.wasModified()) {
             external.compile(compilable.getName());
-            GraphUtils.DFSTraverseSingleComponent(depGraph, Optional.of(compilable), Optional.empty()).forEachRemaining(c -> c.wasModified(true));
+            GraphUtils.DFSTraverseSingleComponent(depGraph, Optional.of(compilable)).forEachRemaining(c -> c.wasModified(true));
         }
     }
 
-    private DirectedGraph<Compilable, DefaultEdge> createDependenciesGraph(File file) {
-        return parseFile(file).updateModifiedFiles().buildGraph();
-    }
-
-    private MakefileImpl updateModifiedFiles() {
-        nameToComp.values().stream()
-                .filter(c -> c.getType() == Compilable.Type.FILE)
-                .forEach(c -> c.wasModified(external.wasModified(c.getName())));
-        return this;
-    }
-
-    private DirectedGraph<Compilable, DefaultEdge> buildGraph() {
-
+    private DirectedGraph<Compilable, DefaultEdge> createDependenciesGraph(MakefileParser p) {
         DirectedGraph<Compilable, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
-        nameToComp.values().
-                forEach(graph::addVertex);
-        nameToDepNames.forEach((name, depNames) -> depNames
-                .forEach(dep -> graph.addEdge(nameToComp.get(dep), nameToComp.get(name))));
+        Collection<Compilable> compilables = p.getCompilables();
+        compilables.forEach(graph::addVertex);
+        compilables.forEach(t -> p.getDependantsFor(t)
+                .forEach(d -> graph.addEdge(d, t)));
         return graph;
     }
-
-    private MakefileImpl parseFile(File file) {
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            br.lines().forEach(this::parseLine);
-        } catch (IOException e) {
-            throw new AssertionError();
-        }
-        return this;
-    }
-
-    private String[] splitInputLine(String line) {
-        return line.split("[\\s+[=|:]*\\s*]+|[,\\s+]+ ");
-    }
-
-    String[] parseLine(String line) {
-
-        Compilable.Type type = line.contains(":") ? Compilable.Type.FILE : Compilable.Type.TASK;
-        String[] tasksOrFiles = splitInputLine(line);
-
-        String taskOrFile = tasksOrFiles[0];
-        nameToComp.put(taskOrFile, new CompilableImpl(taskOrFile, type));
-        ArrayList<String> dependencies = new ArrayList<>();
-        for (int i = 1; i < tasksOrFiles.length; i++) {
-            String dependency = tasksOrFiles[i];
-            dependencies.add(dependency);
-            nameToComp.putIfAbsent(dependency, new CompilableImpl(dependency, Compilable.Type.FILE));
-        }
-        nameToDepNames.put(taskOrFile, dependencies);
-        return tasksOrFiles;
-
-    }
-
-//    public static void main(String[] args) {
-//        MakefileImpl m = new MakefileImpl(null);
-//        for (String s : m.parseLine("file1.exe : dep1.c, dep2.cpp, dep3.java"))
-//            System.out.println(s);
-//    }
 }

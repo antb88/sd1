@@ -2,12 +2,7 @@ package cs.technion.ac.il.sd.library;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.CycleDetector;
-import org.jgrapht.event.ConnectedComponentTraversalEvent;
-import org.jgrapht.event.EdgeTraversalEvent;
 import org.jgrapht.event.TraversalListener;
-import org.jgrapht.event.VertexTraversalEvent;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.BreadthFirstIterator;
 import org.jgrapht.traverse.DepthFirstIterator;
 import org.jgrapht.traverse.TopologicalOrderIterator;
@@ -81,7 +76,7 @@ public class GraphUtils {
      */
     private static <V,E> Iterator<V> DFSTraverse(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener, boolean isCrossComponent)
     {
-        DepthFirstIterator<V, E> iterator = new DepthFirstIterator<V, E>(graph, startVertex.isPresent() ? startVertex.get() : null);
+        DepthFirstIterator<V, E> iterator = new DepthFirstIterator<>(graph, startVertex.isPresent() ? startVertex.get() : null);
         iterator.setCrossComponentTraversal(isCrossComponent);
         if(listener.isPresent())
         {
@@ -101,13 +96,25 @@ public class GraphUtils {
         return DFSTraverse(graph, startVertex, listener, true);
     }
 
+
+    /**
+     * @param graph
+     * @param startVertex
+     * @param <V>
+     * @param <E>
+     * @return
+     */
+    public static <V, E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V, E> graph, Optional<V> startVertex) {
+        return DFSTraverse(graph, startVertex, Optional.empty(), false);
+    }
+
+
     /**
      * {@link #DFSTraverse(DirectedGraph, Optional, Optional, boolean) DFSTraverse}.
      * The search will not be limited to the connected component that includes the specified start vertex, that is, will be able to traverse all the graph.
      *
      */
-    public static <V,E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V,E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener)
-    {
+    private static <V, E> Iterator<V> DFSTraverseSingleComponent(DirectedGraph<V, E> graph, Optional<V> startVertex, Optional<TraversalListener<V, E>> listener) {
         return DFSTraverse(graph, startVertex, listener, false);
     }
 
@@ -162,7 +169,7 @@ public class GraphUtils {
     public static <V,E> Set<V> getAllReachableVerticesFromSource(DirectedGraph<V,E> graph, V source)
     {
         Set<V> reachable = new HashSet<>();
-        DFSTraverseSingleComponent(graph, Optional.of(source), Optional.empty()).forEachRemaining(v -> reachable.add(v));
+        DFSTraverseSingleComponent(graph, Optional.of(source), Optional.empty()).forEachRemaining(reachable::add);
         reachable.remove(source);
         return reachable;
     }
