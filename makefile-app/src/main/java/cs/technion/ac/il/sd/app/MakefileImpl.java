@@ -50,7 +50,7 @@ public class MakefileImpl implements Makefile {
         DirectedGraph<Compilable, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
         Collection<Compilable> compilables = p.getCompilables();
         compilables.forEach(graph::addVertex);
-        compilables.forEach(t -> p.getDependantsFor(t)
+        compilables.forEach(t -> p.getDependantsOf(t)
                 .forEach(d -> graph.addEdge(d, t)));
         return graph;
     }

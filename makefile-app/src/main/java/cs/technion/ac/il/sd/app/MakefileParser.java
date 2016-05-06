@@ -6,10 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -58,13 +55,17 @@ public class MakefileParser {
         nameToDepNames.put(taskOrFile, dependencies);
     }
 
-    public Collection<Compilable> getCompilables() {
+    public Optional<Compilable> getCompilable(String name) {
+        return Optional.of(nameToComp.get(name));
+    }
+
+    public Set<Compilable> getCompilables() {
         return nameToComp.values()
                 .stream()
                 .collect(Collectors.toSet());
     }
 
-    public Collection<Compilable> getDependantsFor(Compilable target) {
+    public Set<Compilable> getDependantsOf(Compilable target) {
         return nameToDepNames.get(target.getName())
                 .stream()
                 .map(nameToComp::get)
