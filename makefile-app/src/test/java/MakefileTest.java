@@ -5,15 +5,18 @@ import cs.technion.ac.il.sd.ExternalCompiler;
 import cs.technion.ac.il.sd.app.Makefile;
 import cs.technion.ac.il.sd.app.MakefileModule;
 import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import java.io.File;
 
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.*;
 
 /**
- * Created by ant on 5/7/16.
+ * Tests for {@link cs.technion.ac.il.sd.app.MakefileImpl}
  */
 public class MakefileTest {
 
@@ -31,19 +34,80 @@ public class MakefileTest {
         $.processFile(new File(getClass().getResource(name + "_build.txt").getFile()));
     }
 
+    @Test
+    public void biggerModifiedDoesNotFail() {
+        when(mock.wasModified(anyString())).thenReturn(true);
+        processFile("bigger");
+        Mockito.verify(mock, never()).fail();
+    }
 
     @Test
-    public void biggerModified() {
+    public void biggerUnModified() {
         when(mock.wasModified(anyString())).thenReturn(false);
-        when(mock.wasModified("f.go")).thenReturn(true);
         processFile("bigger");
-//        Assert.assertTrue("f.go should have been modified", find("f.go").wasModified());
-//        Assert.assertTrue("f.cpp should have been modified", find("f.cpp").wasModified());
-//        Assert.assertTrue("t should have been modified", find("t").wasModified());
-//        Assert.assertTrue("main should have been modified", find("main").wasModified());
-//        Assert.assertFalse("f.java shouldn't have been modified", find("f.java").wasModified());
-//        Assert.assertFalse("f.asm shouldn't have been modified", find("f.asm").wasModified());
-//        Assert.assertFalse("f.c shouldn't have been modified", find("f.c").wasModified());
-//        Assert.assertFalse("t2 shouldn't have been modified", find("t2").wasModified());
+        Mockito.verify(mock, never()).fail();
+        Mockito.verify(mock, never()).compile(anyString());
+    }
+
+    @Test
+    public void biggerModifiedCompilesTotal() {
+        when(mock.wasModified(anyString())).thenReturn(false);
+        when(mock.wasModified("f.asm")).thenReturn(true);
+        processFile("bigger");
+        Mockito.verify(mock, times(5)).compile(anyString());
+    }
+
+    @Test
+    public void biggerModifiedCompilesInOrder() {
+        when(mock.wasModified(anyString())).thenReturn(false);
+        when(mock.wasModified("f.asm")).thenReturn(true);
+        processFile("bigger");
+        InOrder inOrder = Mockito.inOrder(mock);
+        inOrder.verify(mock).compile("f.asm");
+        inOrder.verify(mock).compile("f.go");
+        inOrder.verify(mock, times(2)).compile(argThat(new ArgumentMatcher<String>() {
+            @Override
+            public boolean matches(Object o) {
+                return o.equals("t") || o.equals("f.cpp");
+            }
+        }));
+        inOrder.verify(mock).compile("main");
+        inOrder.verifyNoMoreInteractions();
+    }
+
+    @Test
+    public void biggerModifiedEachCompilesExactlyOnce() {
+        when(mock.wasModified(anyString())).thenReturn(false);
+        when(mock.wasModified("f.asm")).thenReturn(true);
+        processFile("bigger");
+        Mockito.verify(mock, never()).fail();
+        Mockito.verify(mock, times(1)).compile("f.asm");
+        Mockito.verify(mock, times(1)).compile("f.go");
+        Mockito.verify(mock, times(1)).compile("f.cpp");
+        Mockito.verify(mock, times(1)).compile("t");
+        Mockito.verify(mock, times(1)).compile("main");
+    }
+
+    @Test
+    public void biggerUnmodifiedNoCompilation() {
+        when(mock.wasModified(anyString())).thenReturn(false);
+        processFile("bigger");
+        Mockito.verify(mock, never()).compile(anyString());
+    }
+
+    @Test
+    public void cycleModifiedFails() {
+        when(mock.wasModified(anyString())).thenReturn(true);
+        processFile("cycle");
+        Mockito.verify(mock, never()).compile(anyString());
+        Mockito.verify(mock, times(1)).fail();
+    }
+
+    @Test
+    public void cycleUnModifiedFails() {
+        when(mock.wasModified(anyString())).thenReturn(false);
+        processFile("cycle");
+        Mockito.verify(mock, never()).compile(anyString());
+        Mockito.verify(mock, times(1)).fail();
     }
 }
