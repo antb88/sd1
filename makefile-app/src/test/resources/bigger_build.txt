@@ -1,0 +1,7 @@
+main = t, f.java, f.cpp
+t = f.cpp, f.h, f.go, f.py
+f.java :
+t2 =
+f.cpp : f.h, f.go, f.py
+f.go : f.asm
+
