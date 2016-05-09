@@ -45,17 +45,6 @@ public class MakefileTest {
         Mockito.verify(mock, never()).fail();
     }
 
-    /** Tests that an unmodified complex file does not compile
-     /**
-     * Tests that a file that should not fail but also should not compile anything does so
-     */
-    @Test
-    public void biggerUnModified() {
-        when(mock.wasModified(anyString())).thenReturn(false);
-        processFile("bigger");
-        Mockito.verify(mock, never()).fail();
-        Mockito.verify(mock, never()).compile(anyString());
-    }
 
     /** Tests that a more complex files compiles the needed number of files */
     @Test
@@ -112,6 +101,7 @@ public class MakefileTest {
         when(mock.wasModified(anyString())).thenReturn(false);
         processFile("bigger");
         Mockito.verify(mock, never()).compile(anyString());
+        Mockito.verify(mock, never()).fail();
     }
 
     /**
@@ -138,7 +128,7 @@ public class MakefileTest {
 
     /**
      * Tests that a several thousands tasks file with dependencies designed as a tree
-     * meaning all depending on a single root, compiles the correct amount of times
+     * meaning all depending on a single root (recursively), compiles the correct amount of times
      */
     @Test
     public void bigTreeTestCompilesCorrectAmount() {
