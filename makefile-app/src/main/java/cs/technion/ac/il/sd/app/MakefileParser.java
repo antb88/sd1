@@ -21,7 +21,7 @@ public class MakefileParser {
     private static final String MAKEFILE_LINE_SPLITTER = "[\\s[=|:]\\s]+|[,\\s+]+|[\\s+$]";
 
     public static MakefileParser parse(File file) {
-        return new MakefileParser(file).parseFile(file);
+        return new MakefileParser(file).parse();
     }
 
     private MakefileParser(File file) {
@@ -30,7 +30,7 @@ public class MakefileParser {
         this.nameToDepNames = new HashMap<>();
     }
 
-    private MakefileParser parseFile(File file) {
+    private MakefileParser parse() {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             br.lines().forEach(l -> {
                 String trm = l.trim();

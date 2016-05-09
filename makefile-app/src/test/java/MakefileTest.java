@@ -34,6 +34,10 @@ public class MakefileTest {
         $.processFile(new File(getClass().getResource(name + "_build.txt").getFile()));
     }
 
+
+    /**
+     * Tests that a file that should not fail doesnt
+     */
     @Test
     public void biggerModifiedDoesNotFail() {
         when(mock.wasModified(anyString())).thenReturn(true);
@@ -41,6 +45,10 @@ public class MakefileTest {
         Mockito.verify(mock, never()).fail();
     }
 
+    /** Tests that an unmodified complex file does not compile
+     /**
+     * Tests that a file that should not fail but also should not compile anything does so
+     */
     @Test
     public void biggerUnModified() {
         when(mock.wasModified(anyString())).thenReturn(false);
@@ -49,6 +57,7 @@ public class MakefileTest {
         Mockito.verify(mock, never()).compile(anyString());
     }
 
+    /** Tests that a more complex files compiles the needed number of files */
     @Test
     public void biggerModifiedCompilesTotal() {
         when(mock.wasModified(anyString())).thenReturn(false);
@@ -57,6 +66,10 @@ public class MakefileTest {
         Mockito.verify(mock, times(5)).compile(anyString());
     }
 
+    /** Tests that a more complex file compiles in the correct order,
+     *  after a file with several dependencies was modified.
+     *  Note that there are 2 correct ways to compile in order.
+     */
     @Test
     public void biggerModifiedCompilesInOrder() {
         when(mock.wasModified(anyString())).thenReturn(false);
@@ -75,6 +88,9 @@ public class MakefileTest {
         inOrder.verifyNoMoreInteractions();
     }
 
+    /**
+     * Tests that a file compiles each needed task exactly once
+     */
     @Test
     public void biggerModifiedEachCompilesExactlyOnce() {
         when(mock.wasModified(anyString())).thenReturn(false);
@@ -88,6 +104,9 @@ public class MakefileTest {
         Mockito.verify(mock, times(1)).compile("main");
     }
 
+    /**
+     * Tests that an unmodified larger file isnt compiled if nothing is modified
+     */
     @Test
     public void biggerUnmodifiedNoCompilation() {
         when(mock.wasModified(anyString())).thenReturn(false);
@@ -95,6 +114,9 @@ public class MakefileTest {
         Mockito.verify(mock, never()).compile(anyString());
     }
 
+    /**
+     * Tests for failure in case of a cycle in a complex file
+     */
     @Test
     public void cycleModifiedFails() {
         when(mock.wasModified(anyString())).thenReturn(true);
@@ -103,11 +125,38 @@ public class MakefileTest {
         Mockito.verify(mock, times(1)).fail();
     }
 
+    /**
+     * Tests that even unmodified file with a cycle fails
+     */
     @Test
     public void cycleUnModifiedFails() {
         when(mock.wasModified(anyString())).thenReturn(false);
         processFile("cycle");
         Mockito.verify(mock, never()).compile(anyString());
         Mockito.verify(mock, times(1)).fail();
+    }
+
+    /**
+     * Tests that a several thousands tasks file with dependencies designed as a tree
+     * meaning all depending on a single root, compiles the correct amount of times
+     */
+    @Test
+    public void bigTreeTestCompilesCorrectAmount() {
+        when(mock.wasModified("file")).thenReturn(true);
+        processFile("tree");
+        Mockito.verify(mock, never()).fail();
+        Mockito.verify(mock, times(32767)).compile(anyString());
+    }
+
+    /**
+     * Tests that a several thousands tasks file with dependencies designed as a tree
+     * does not compile in case root hasnt changed
+     */
+    @Test
+    public void bigTreeTestUnmodifiedShouldNotCompile() {
+        when(mock.wasModified("file")).thenReturn(false);
+        processFile("tree");
+        Mockito.verify(mock, never()).fail();
+        Mockito.verify(mock, never()).compile(anyString());
     }
 }
