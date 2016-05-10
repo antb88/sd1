@@ -149,4 +149,31 @@ public class MakefileTest {
         Mockito.verify(mock, never()).fail();
         Mockito.verify(mock, never()).compile(anyString());
     }
+    @Test
+    public void wasModifiedNotCalledOntasks()
+    {
+        processFile("tasks");
+        Mockito.verify(mock, never()).wasModified(startsWith("t"));
+        Mockito.verify(mock, never()).fail();
+    }
+    @Test
+    public void tasksCompiledInOrder()
+    {
+        when(mock.wasModified("f.cpp")).thenReturn(true);
+        processFile("tasks");
+        Mockito.verify(mock, never()).wasModified(startsWith("t"));
+        InOrder inOrder = Mockito.inOrder(mock);
+        inOrder.verify(mock).compile("f.cpp");
+        inOrder.verify(mock, times(2)).compile(argThat(new ArgumentMatcher<String>() {
+            @Override
+            public boolean matches(Object o) {
+                return o.equals("f") || o.equals("f.java");
+            }
+        }));
+        inOrder.verify(mock).compile("t1");
+        inOrder.verify(mock).compile("t2");
+        inOrder.verify(mock).compile("t3");
+        inOrder.verifyNoMoreInteractions();
+
+    }
 }

@@ -366,27 +366,27 @@ public class GraphUtilsTest {
 
         verteicesList.clear();
         GraphUtils.BFSTraverseCrossComponent(g, Optional.empty()).forEachRemaining(v -> {verteicesList.add(v);});
-        Assert.assertEquals(verteicesList.stream().collect(Collectors.toSet()), Arrays.asList(0,1,2).stream().collect(Collectors.toSet()));
+        Assert.assertEquals(verteicesList.stream().collect(Collectors.toSet()), new HashSet<>(Arrays.asList(0,1,2)));
     }
     @Test
     public void reachableVerticesComplexGraphCorrect()
     {
         Assert.assertEquals(GraphUtils.getAllReachableVerticesFromSource(complexGraph,5),
-                Arrays.asList(5,2,9,10,11).stream().collect(Collectors.toSet()));
+                new HashSet<>(Arrays.asList(5,2,9,10,11)));
         Assert.assertEquals(GraphUtils.getAllReachableVerticesFromSource(complexGraph,3),
-                Arrays.asList(3,8,9,10).stream().collect(Collectors.toSet()));
+                new HashSet<>(Arrays.asList(3,8,9,10)));
         Assert.assertEquals(GraphUtils.getAllReachableVerticesFromSource(complexGraph,7),
-                Arrays.asList(7,8,2,9,10,11).stream().collect(Collectors.toSet()));
+                new HashSet<>(Arrays.asList(7,8,2,9,10,11)));
         Assert.assertEquals(GraphUtils.getAllReachableVerticesFromSource(complexGraph,8),
-                Arrays.asList(8,9).stream().collect(Collectors.toSet()));
+                new HashSet<>(Arrays.asList(8,9)));
         Assert.assertEquals(GraphUtils.getAllReachableVerticesFromSource(complexGraph,10),
-                Arrays.asList(10).stream().collect(Collectors.toSet()));
+                new HashSet<>(Arrays.asList(10)));
         Assert.assertEquals(GraphUtils.getAllReachableVerticesFromSource(complexGraph,11),
-                Arrays.asList(2,9,10,11).stream().collect(Collectors.toSet()));
+                new HashSet<>(Arrays.asList(2,9,10,11)));
         Assert.assertEquals(GraphUtils.getAllReachableVerticesFromSource(complexGraph,2),
-                Arrays.asList(2).stream().collect(Collectors.toSet()));
+                new HashSet<>(Arrays.asList(2)));
         Assert.assertEquals(GraphUtils.getAllReachableVerticesFromSource(complexGraph,9),
-                Arrays.asList(9).stream().collect(Collectors.toSet()));
+                new HashSet<>(Arrays.asList(9)));
     }
 
 

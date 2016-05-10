@@ -1,0 +1,6 @@
+t1 = f, f.java, f.cpp
+f.java : f.cpp
+f : f.cpp
+t2 = t1, f
+t3 = t2
+t4 =
