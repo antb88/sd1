@@ -9,6 +9,7 @@ import org.jgrapht.graph.DefaultEdge;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -19,10 +20,12 @@ public class MakefileImpl implements Makefile {
 
 
     private final ExternalCompiler external;
+    private HashSet<Compilable> traversed;
 
     @Inject
     public MakefileImpl(ExternalCompiler external) {
         this.external = external;
+        this.traversed = new HashSet<>();
     }
 
     @Override
@@ -38,18 +41,19 @@ public class MakefileImpl implements Makefile {
         toposort.get().forEachRemaining(c -> compileAndUpdateDependants(c, depGraph));
     }
 
-
     private void compileAndUpdateDependants(Compilable compilable, DirectedGraph<Compilable, DefaultEdge> depGraph) {
         if (compilable.wasModified()) {
             external.compile(compilable.getName());
-            if(!compilable.wasTraversed())
-            {
-                GraphUtils.getAllReachableVerticesFromSource(depGraph, compilable).forEach(c -> {
-                    c.wasModified(true);
-                    c.wasTraversed(true);
-                });
+            if (!traversed.contains(compilable)) {
+                GraphUtils.getAllReachableVerticesFromSource(depGraph, compilable)
+                        .forEach(this::traverseAndSetAsModified);
             }
         }
+    }
+
+    private void traverseAndSetAsModified(Compilable c) {
+        traversed.add(c);
+        c.wasModified(true);
     }
 
     private DirectedGraph<Compilable, DefaultEdge> createDependenciesGraph(MakefileParser p) {
