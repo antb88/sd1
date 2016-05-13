@@ -8,12 +8,13 @@ public class CompilableImpl implements Compilable {
     private final String name;
     private Type type;
     private boolean wasModified;
-
+    private boolean wasTraversed;
 
     public CompilableImpl(String name, Type type) {
         this.name = name;
         this.type = type;
         this.wasModified = false;
+        this.wasTraversed = false;
     }
 
     @Override
@@ -36,6 +37,15 @@ public class CompilableImpl implements Compilable {
         boolean prevWasModified = wasModified;
         wasModified = wasModified_;
         return prevWasModified;
+    }
+    @Override
+    public boolean wasTraversed(){return wasTraversed;}
+    @Override
+    public boolean wasTraversed(boolean wasTraversed_)
+    {
+        boolean prevWasTraversed = this.wasTraversed;
+        this.wasTraversed = wasTraversed_;
+        return prevWasTraversed;
     }
 
     @Override

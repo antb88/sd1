@@ -13,5 +13,8 @@ public interface Compilable {
     Type getType();
     boolean wasModified();
     boolean wasModified(boolean wasModified);
+    boolean wasTraversed();
+    boolean wasTraversed(boolean wasTraversed_);
+
 
 }

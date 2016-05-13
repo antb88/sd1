@@ -41,7 +41,6 @@ public class ExampleTest {
     inOrder.verify(mock).compile("f1");
     inOrder.verify(mock).compile("main");
     Mockito.verify(mock, times(2)).compile(anyString());
-    Mockito.verify(mock, never()).fail();
   }
 
   @Test
@@ -53,16 +52,12 @@ public class ExampleTest {
     inOrder.verify(mock).compile("f2");
     inOrder.verify(mock).compile("main");
     Mockito.verify(mock, times(3)).compile(anyString());
-    Mockito.verify(mock, never()).fail();
-
   }
 
   @Test
   public void withModification() throws Exception {
-    processFile("unmodified");
     when(mock.wasModified(anyString())).thenReturn(false);
     processFile("unmodified");
     Mockito.verify(mock, never()).compile(anyString());
-    Mockito.verify(mock, never()).fail();
   }
 }
